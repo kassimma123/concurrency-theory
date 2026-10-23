@@ -1,7 +1,5 @@
 # Raport: Teoria Współbieżności – Ćwiczenie 3
-**Temat:** Monitory i oczekiwanie na warunek w Javie  
-**Autor:** [Imię i Nazwisko]  
-**Data:** [Data wykonania]  
+**Temat:** Monitory i oczekiwanie na warunek w Javie
 
 ---
 

@@ -5,5 +5,5 @@ source "$DIR/env.sh"
 
 "$DIR/compile.sh"
 echo ""
-echo "[INFO] Uruchamianie testow stanow granicznych (Zadanie 4)..."
-java -cp "$DIR/out" BoundedBufferTest
+echo "[INFO] Uruchamianie BoundedBufferLab..."
+java -cp "$DIR/out" BoundedBufferLab
