@@ -63,6 +63,18 @@ public final class BoundedBufferLab {
 
             //pobierz element z głowy
             @SuppressWarnings("unchecked")
+                    T value = (T) elements[head];
+
+            //wyczyść miejsce w tablicy
+            elements[head] = null;
+            //przesuń głowę
+            head = (head+1) % elements.length;
+            //zmniejsz licznik
+            size --;
+            //obudź producentów
+            notifyAll();
+
+            return Optional.of(value);
 
 
         }
