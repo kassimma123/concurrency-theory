@@ -24,7 +24,25 @@ public final class BoundedBufferLab {
             // TODO: wait in a while loop while full and not closed;
             // reject a closed buffer; insert at tail; update tail and size;
             // finally notifyAll().
-            throw new UnsupportedOperationException("TODO: put");
+
+            //czekaj, dopóki bufor jest pełny
+            while (size == elements.length && !closed) {
+                wait();
+            }
+
+            //jeśli zamknięty-odrzuć zapis
+            if (closed){
+                throw new IllegalStateException("bufor jest zamknięty");
+            }
+
+            //wstaw element
+            elements[tail] = item;
+            //przesuń ogon
+            tail = (tail + 1) % elements.length;
+            //zwiększ licznik zajętych miejsc
+            size++;
+            //obudź konsumentów
+            notifyAll();
         }
 
         public synchronized Optional<T> take() throws InterruptedException {
@@ -32,7 +50,21 @@ public final class BoundedBufferLab {
             // return Optional.empty() when closed and empty;
             // otherwise remove at head, clear the slot, update state,
             // notifyAll(), and return the value.
-            throw new UnsupportedOperationException("TODO: take");
+
+            //czekaj, jeśli bufor pusty
+            while (size == 0 && !closed){
+                wait();
+            }
+
+            // jeśli pusty i zamknięty -> koniec danych
+            if (size == 0){
+                return Optional.empty();
+            }
+
+            //pobierz element z głowy
+            @SuppressWarnings("unchecked")
+
+
         }
 
         public synchronized void close() {
