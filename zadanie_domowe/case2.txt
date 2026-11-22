@@ -1,0 +1,8 @@
+(a) x := x + y
+(b) y := z - v
+(c) z := v * x
+(d) v := x + 2y
+(e) x := 3y + 2x
+(f) v := v - 2z
+A = {a,b,c,d,e,f}
+w = afaeffbcd

@@ -1,0 +1,22 @@
+kazda transakcja x := wyrazenie robi dwie rzeczy:
+-> zapisuje jedna zmienna tą po lewej stronie 
+-> czyta zbiór zmiennych, które są po prawej
+
+czyli np y := y + 2z
+zapisuje y i czyta {y, z}, liczby np 2 w 2z ignoruje bo liczą sie tylko zmienne 
+
+ZALEZNOSCI D
+dwie akcje są zalezne, jeśli zamiana ich kolejności mogłaby zmienić wynik
+-> gdy jedna z nich zapisuje a druga czyta lub zapisuje
+
+RELACJA I - czyli dopełnienie D - niezalezność
+
+Ślad [w] - klasa abstrakcji słowa
+w baadcb litery d i c sa np zalezne, a a i d są niezalene wiec baadcb == badacb
+
+Postać normalna FOATY FNF
+dzieli ślad na kroki, w jednym kroku są akcje, które moga sie wykonac równolegle (sa parami neizalezne)
+kazdy krok jest mozliwie najwczesniejszy 
+
+
+Graf zaleznosci postaci normalnej wierzcholki to pozycje w slowie z etykieta litery
