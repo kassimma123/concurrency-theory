@@ -2,30 +2,18 @@ package com.concurrency;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
-import java.nio.file.Path;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Scanner;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.ArrayList;
 
 //actions - mapa litera->akcja, alphabet - lista liter A (kolejność), word - słowo
-public record InputParser(Map<Character, Action> actions, List<Character> alphabet, String word) {
+public record InputData(Map<Character, Action> actions, List<Character> alphabet, String word) {
     private static final Pattern ACTION_LINE = Pattern.compile("^\\(\\s*([a-z])\\s*\\)\\s*([a-z])\\s*:=\\s*(.+)$");
     // np (b) y := y + 2z ( b ) y := y + 2z (dowolny znak, co naj, mniej jeden)
 
@@ -38,7 +26,7 @@ public record InputParser(Map<Character, Action> actions, List<Character> alphab
     private static final Pattern VARIABLE = Pattern.compile("[a-z]");
     // jedna małą litera - do suzkania zmiennych po prawej str
 
-    public static InputParser fromFile(Path path) throws IOException {
+    public static InputData fromFile(Path path) throws IOException {
         Map<Character, Action> actions = new LinkedHashMap<>();
         List<Character> alphabet = new ArrayList<>();
         String word = null;
@@ -83,7 +71,7 @@ public record InputParser(Map<Character, Action> actions, List<Character> alphab
             if (!actions.containsKey(c))
                 throw new IllegalArgumentException("litera " + c + " nie nalezy do A");
 
-        return new InputParser(actions, alphabet, word);
+        return new InputData(actions, alphabet, word);
 
     }
 }
