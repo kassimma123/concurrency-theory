@@ -1,0 +1,184 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{margin=2.2cm}
+
+\title{\textbf{Teoria Współbieżności}\\Sprawozdanie z zadania domowego: Teoria Śladów Mazurkiewicza}
+\author{Katarzyna Piskorz}
+\date{Listopad 2026}
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    backgroundcolor=\color{gray!8},
+    frame=single,
+    breaklines=true,
+    columns=fullflexible,
+    aboveskip=1.5em,
+    belowskip=1em
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Wstęp i cel zadania}
+Przedmiotem zadania jest analiza sekwencji współbieżnych operacji z wykorzystaniem \textbf{teorii śladów Mazurkiewicza} oraz algebry procesów Diekerta i Métiviera. 
+Dany jest alfabet akcji $A$, zestaw transakcji przypisujących wartości do zmiennych oraz słowo $w \in A^*$. Celem programu jest:
+\begin{enumerate}
+    \item \textbf{Wyznaczenie relacji zależności $D \subseteq A \times A$}: para akcji $(a, b)$ jest zależna, jeżeli ich równoległe lub zamienne wykonanie może prowadzić do wyścigu danych (\textit{race condition}). Zgodnie z warunkami Bernsteina:
+    \[
+    (a, b) \in D \iff (Out(a) \cap Out(b) \neq \emptyset) \lor (Out(a) \cap In(b) \neq \emptyset) \lor (In(a) \cap Out(b) \neq \emptyset)
+    \]
+    gdzie $In(a)$ oznacza zbiór zmiennych odczytywanych przez akcję $a$, a $Out(a)$ -- modyfikowanych przez nią.
+    \item \textbf{Wyznaczenie relacji niezależności $I \subseteq A \times A$}: jako dopełnienia symetrycznego: $I = (A \times A) \setminus D$.
+    \item \textbf{Wyznaczenie Postaci Normalnej Foaty $\text{FNF}([w])$}: reprezentującej ślad $[w]$ jako unikalną sekwencję kroków równoległych $(w_1)(w_2)\dots(w_k)$, w których akcje wewnątrz każdego nawiasu są wzajemnie niezależne.
+    \item \textbf{Wyznaczenie minimalnego grafu zależności (grafu Diekerta)}: skierowanego grafu acyklicznego (DAG), którego wierzchołkami są wystąpienia liter w słowie $w$, zminimalizowanego za pomocą \textbf{redukcji tranzytywnej}.
+    \item \textbf{Wizualizacja}: eksport struktury grafu do języka DOT i wygenerowanie wizualizacji za pomocą pakietu Graphviz.
+\end{enumerate}
+
+\section{Opis implementacji}
+Program został zaimplementowany w języku \textbf{Java 25} (zgodnym wstecznie z LTS 21/17). Narzędziem automatyzacji budowania i zarządzania projektem jest \textbf{Apache Maven}, a wizualizacja grafów jest wykonywana narzędziem \textbf{Graphviz} (\texttt{dot}).
+Struktura klasowa projektu:
+\begin{itemize}
+    \item \textbf{\texttt{Action}}: Rekord przechowujący symbol akcji, modyfikowaną zmienną (\texttt{written} $\equiv Out$) oraz zbiór zmiennych odczytywanych (\texttt{read} $\equiv In$). Metoda \texttt{dependsOn(Action other)} weryfikuje warunki Bernsteina.
+    \item \textbf{\texttt{InputData}}: Odpowiada za wczytanie pliku wejściowego i parsowanie akcji, alfabetu oraz słowa $w$ za pomocą wyrażeń regularnych (\texttt{Pattern}/\texttt{Matcher}).
+    \item \textbf{\texttt{Relations}}: Buduje macierz sąsiedztwa dla relacji $D$ i $I$. Formatuje relacje w notacji zbiorów par uporządkowanych.
+    \item \textbf{\texttt{FoataNormalForm}}: Implementuje algorytm dynamicznego wyznaczania poziomów dla każdej pozycji $i$ w słowie:
+    \[
+    \text{level}[i] = 1 + \max \left(\{0\} \cup \{ \text{level}[j] : j < i \land (w[j], w[i]) \in D \}\right)
+    \]
+    Litery o tym samym poziomie są sortowane i grupowane w kolejnych krokach Foaty.
+    \item \textbf{\texttt{DependencyGraph}}: Tworzy pełny graf zależności skierowanych (tylko w przód dla $i < j$), oblicza domknięcie przechodnie, a następnie eliminuje krawędzie tranzytywne. Udostępnia metodę \texttt{toDot()} generującą kod DOT z etykietami liter.
+    \item \textbf{\texttt{Main}}: Główny moduł integrujący, wypisujący rezultaty na konsolę oraz zapisujący pliki \texttt{.dot}.
+\end{itemize}
+
+\newpage
+\section{Wyniki działania programu}
+
+\subsection{Dane testowe 1 (z konspektu)}
+\textbf{Zestaw akcji:}
+\begin{itemize}
+    \item $(a)\ x := x + y$, \quad $(b)\ y := y + 2z$, \quad $(c)\ x := 3x + z$, \quad $(d)\ z := y - z$
+\end{itemize}
+\textbf{Alfabet:} $A = \{a, b, c, d\}$, \quad \textbf{Słowo:} $w = baadcb$.
+
+\vspace{0.5em}
+\noindent\textbf{Wyznaczone relacje:}
+\begin{itemize}
+    \item $D = \{ (a, a), (a, b), (a, c), (b, a), (b, b), (b, d), (c, a), (c, c), (c, d), (d, b), (d, c), (d, d) \}$
+    \item $I = \{ (a, d), (b, c), (c, b), (d, a) \}$
+\end{itemize}
+
+\noindent\textbf{Postać normalna Foaty:}
+\[
+\text{FNF}([w]) = (b)(ad)(a)(bc)
+\]
+
+\vspace{0.5em}
+\noindent\textbf{Minimalny graf zależności w formacie DOT:}
+\begin{lstlisting}
+digraph g { 
+  1 [label="b"]; 2 [label="a"]; 3 [label="a"]; 4 [label="d"]; 5 [label="c"]; 6 [label="b"];
+  1 -> 2; 2 -> 3; 1 -> 4; 3 -> 5; 4 -> 5; 3 -> 6; 4 -> 6;
+}
+\end{lstlisting}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.30\textwidth]{test1.png}
+    \caption{Minimalny graf zależności dla słowa $w = baadcb$ (Dane testowe 1)}
+    \label{fig:test1}
+\end{figure}
+
+\subsection{Dane testowe 2 (z konspektu)}
+\textbf{Zestaw akcji:}
+\begin{itemize}
+    \item $(a)\ x := x + 1$, \quad $(b)\ y := y + 2z$, \quad $(c)\ x := 3x + z$
+    \item $(d)\ w := w + v$, \quad $(e)\ z := y - z$, \quad $(f)\ v := x + v$
+\end{itemize}
+\textbf{Alfabet:} $A = \{a, b, c, d, e, f\}$, \quad \textbf{Słowo:} $w = acdcfbbe$.
+
+\vspace{0.5em}
+\noindent\textbf{Wyznaczone relacje:}
+\begin{itemize}
+    \item $D = \{ (a, a), (a, c), (a, f), (b, b), (b, e), (c, a), (c, c), (c, e), (c, f),$ \\
+          $\phantom{D = \{ } (d, d), (d, f), (e, b), (e, c), (e, e), (f, a), (f, c), (f, d), (f, f) \}$
+    \item $I = \{ (a, b), (a, d), (a, e), (b, a), (b, c), (b, d), (b, f), (c, b), (c, d),$ \\
+          $\phantom{I = \{ } (d, a), (d, b), (d, c), (d, e), (e, a), (e, d), (e, f), (f, b), (f, e) \}$
+\end{itemize}
+
+\noindent\textbf{Postać normalna Foaty:}
+\[
+\text{FNF}([w]) = (abd)(bc)(c)(ef)
+\]
+
+\vspace{0.5em}
+\noindent\textbf{Minimalny graf zależności w formacie DOT:}
+\begin{lstlisting}
+digraph g { 
+  1 [label="a"]; 2 [label="c"]; 3 [label="d"]; 4 [label="c"]; 5 [label="f"]; 6 [label="b"]; 7 [label="b"]; 8 [label="e"];
+  1 -> 2; 2 -> 4; 3 -> 5; 4 -> 5; 6 -> 7; 4 -> 8; 7 -> 8;
+}
+\end{lstlisting}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.32\textwidth]{test2.png}
+    \caption{Minimalny graf zależności dla słowa $w = acdcfbbe$ (Dane testowe 2)}
+    \label{fig:test2}
+\end{figure}
+
+\newpage
+\subsection{Przykład własny (Dane testowe 3)}
+Zaprojektowano zestaw akcji w celu zbadania zachowania akcji w pełni niezależnej $f$ (operującej na zmiennej $u$) oraz łańcucha zależności między zmiennymi $x, y, z, w, v$:
+\begin{itemize}
+    \item $(a)\ x := x + y$, \quad $(b)\ y := 2y + z$, \quad $(c)\ z := z + 1$
+    \item $(d)\ w := w + x$, \quad $(e)\ v := v + w$, \quad $(f)\ u := u + 5$
+\end{itemize}
+\textbf{Alfabet:} $A = \{a, b, c, d, e, f\}$, \quad \textbf{Słowo:} $w = fabcdeaf$.
+
+\vspace{0.5em}
+\noindent\textbf{Wyznaczone relacje:}
+\begin{itemize}
+    \item $D = \{ (a, a), (a, b), (a, d), (b, a), (b, b), (b, c), (c, b), (c, c), (d, a), (d, d), (d, e), (e, d), (e, e), (f, f) \}$
+    \item $I = (A \times A) \setminus D$ (akcja $f$ jest niezależna od wszystkich pozostałych akcji $a, b, c, d, e$).
+\end{itemize}
+
+\noindent\textbf{Postać normalna Foaty:}
+\[
+\text{FNF}([w]) = (af)(bdf)(ace)
+\]
+
+\vspace{0.5em}
+\noindent\textbf{Minimalny graf zależności w formacie DOT:}
+\begin{lstlisting}
+digraph g { 
+  1 [label="f"]; 2 [label="a"]; 3 [label="b"]; 4 [label="c"]; 5 [label="d"]; 6 [label="e"]; 7 [label="a"]; 8 [label="f"];
+  2 -> 3; 3 -> 4; 2 -> 5; 5 -> 6; 3 -> 7; 5 -> 7; 1 -> 8;
+}
+\end{lstlisting}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.32\textwidth]{custom1.png}
+    \caption{Minimalny graf zależności dla własnego słowa $w = fabcdeaf$ (Dane testowe 3)}
+    \label{fig:custom1}
+\end{figure}
+
+\section{Wnioski}
+\begin{itemize}
+    \item Zaimplementowany algorytm poprawnie identyfikuje relacje zależności $D$ i niezależności $I$ na podstawie warunków Bernsteina.
+    \item Postać normalna Foaty $\text{FNF}([w])$ pozwala na wyznaczenie minimalnego czasu równoległego wykonania śladu — liczba nawiasów odpowiada liczbie taktów zegara/kroków obliczeniowych.
+    \item Redukcja tranzytywna usuwa redundantne krawędzie kolejnościowe, pozostawiając wyłącznie bezpośrednie zależności przyczynowo-skutkowe.
+    \item Integracja z narzędziem Graphviz umożliwia przejrzystą weryfikację poprawności wygenerowanych struktur współbieżnych.
+\end{itemize}
+
+\end{document}

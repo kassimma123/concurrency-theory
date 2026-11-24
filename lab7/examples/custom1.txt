@@ -1,0 +1,8 @@
+(a) x := x + y
+(b) y := 2y + z
+(c) z := z + 1
+(d) w := w + x
+(e) v := v + w
+(f) u := u + 5
+A = {a, b, c, d, e, f}
+w = fabcdeaf
